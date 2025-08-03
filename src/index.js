@@ -4,7 +4,16 @@ require('dotenv').config();
 const main=require('./config/db')
 const cookieParser=require('cookie-parser')
 const authRouter = require('./routes/userAuthentication');
+const redisClient=require('./config/redis')
 
+
+redisClient.on('error', (err) => {
+  console.error('❌ Redis Client Error:', err);
+});
+
+redisClient.on('connect', () => {
+  console.log('✅ Redis connected');
+});
 
 
 app.use(express.json());
@@ -12,11 +21,19 @@ app.use(cookieParser())
 
 app.use('/user', authRouter);
 
+const InitializeConnection=async()=>{
+    try{
+        await Promise.all([main(),redisClient.connect()]);
+        console.log("db connected");
+        app.listen(7001,()=>{
+        console.log("server listening at port number: "+process.env.PORT)
+          })
 
+    }
+    catch(err){
+        console.log("Error "+err);
+    }
+}
 
-main().then(async()=>{
-app.listen(6001,()=>{
-    console.log("server listening at port number: "+process.env.PORt);
-})
-})
-.catch(error=>console.log("error occured"+error))
+InitializeConnection();
+

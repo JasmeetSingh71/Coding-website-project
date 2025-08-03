@@ -2,6 +2,7 @@ const User=require("../models/user")
 const validate=require('../utils/validator')
 const bcrypt=require('bcrypt');
 const jwt=require('jsonwebtoken');
+const  redisClient  = require('../config/redis')
 
 
 const register=async(req,res)=>{
@@ -12,11 +13,12 @@ const register=async(req,res)=>{
 
          // user.exist(emailId) you can check this but already defined in schema
          req.body.password=await bcrypt.hash(password,10);
+         req.body.role='user';
 
 
         
           const user=await User.create(req.body);
-          const token=jwt.sign({_id:user._id,emailId:emailId},process.env.JWT_KEY,{expiresIn:60*60});
+          const token=jwt.sign({_id:user._id,emailId:emailId ,role:'user'},process.env.JWT_KEY,{expiresIn:60*60});
 
           res.cookie('token',token,{maxAge: 60*60*1000})
           res.status(201).send("user registered successfully");
@@ -41,7 +43,7 @@ const login=async(req,res)=>{
          if(!match)
             throw new Error("invalid creddentials");
 
-         const token=jwt.sign({_id:user._id,emailId:emailId},process.env.JWT_KEY,{expiresIn:60*60});
+         const token=jwt.sign({_id:user._id,emailId:emailId,role:user.role},process.env.JWT_KEY,{expiresIn:60*60});
 
           res.cookie('token',token,{maxAge: 60*60*1000});
           res.status(200).send("login successfully")
@@ -57,12 +59,51 @@ const login=async(req,res)=>{
 
 const logout=async(req,res)=>{
     try{
-          
+        //validate the token
+        // token add in redis blocklist
+        // cookies ko clear krde last me
+          const {token}=req.cookies;
+           const payload = jwt.decode(token);
+           if (!payload || !payload.exp) {
+            throw new Error("Invalid token payload");
+        }
+
+       await redisClient.set(`token:${token}`, "Blocked");
+   
+      await redisClient.expireAt(`token:${token}`,parseInt(payload.exp));
+
+       res.cookie("token",null,{expires: new Date(Date.now())});
+       res.send("Logged Out Succesfully");
+
     }
     catch(err){
-
+        res.status(401).send("Error: "+err.message);
     }
 }
 
 
-module.exports={register,login};
+const adminRegister=async(req,res)=>{
+     try{
+        //validate the data first:
+         validate(req.body);
+         const{firstName,emailId,password}=req.body;
+
+         // user.exist(emailId) you can check this but already defined in schema
+         req.body.password=await bcrypt.hash(password,10);
+         
+
+
+        
+          const user=await User.create(req.body);
+          const token=jwt.sign({_id:user._id,emailId:emailId ,role:user.role},process.env.JWT_KEY,{expiresIn:60*60});
+
+          res.cookie('token',token,{maxAge: 60*60*1000})
+          res.status(201).send("user registered successfully");
+    }
+    catch(err){
+       res.status(400).send("error: "+err);
+    }
+}
+
+
+module.exports={register,login,logout,adminRegister};
