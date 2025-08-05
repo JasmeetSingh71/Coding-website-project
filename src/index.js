@@ -7,13 +7,6 @@ const authRouter = require('./routes/userAuthentication');
 const redisClient=require('./config/redis')
 
 
-redisClient.on('error', (err) => {
-  console.error('❌ Redis Client Error:', err);
-});
-
-redisClient.on('connect', () => {
-  console.log('✅ Redis connected');
-});
 
 
 app.use(express.json());
