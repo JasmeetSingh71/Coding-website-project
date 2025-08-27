@@ -10,10 +10,14 @@ const submitCode = async (req,res)=>{
        const userId = req.result._id;
        const problemId = req.params.id;
 
-       const {code,language} = req.body;
+       let {code,language} = req.body;
 
       if(!userId||!code||!problemId||!language)
         return res.status(400).send("Some field missing");
+
+      if(language==='cpp')
+        language='c++';
+
 
     //    Fetch the problem from database
        const problem =  await Problem.findById(problemId);
@@ -90,7 +94,14 @@ const submitCode = async (req,res)=>{
 
     
 
-    res.status(201).send(submittedResult);
+     const accepted = (status == 'accepted')
+    res.status(201).json({
+      accepted,
+      totalTestCases: submittedResult.testCasesTotal,
+      passedTestCases: testCasesPassed,
+      runtime,
+      memory
+    });
        
     }
     catch(err){
@@ -137,7 +148,13 @@ const runCode = async(req,res)=>{
 
    
   
-   res.status(201).send(testResult);
+   
+   res.status(201).json({
+    success:status,
+    testCases: testResult,
+    runtime,
+    memory
+   });
       
    }
    catch(err){
