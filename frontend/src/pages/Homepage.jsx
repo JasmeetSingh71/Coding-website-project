@@ -1,7 +1,7 @@
 
 
 import { useEffect, useState } from 'react';
-import { NavLink } from 'react-router'; // Fixed import
+import { NavLink } from 'react-router'; 
 import { useDispatch, useSelector } from 'react-redux';
 import axiosClient from '../utils/axiosClient';
 import { logoutUser } from '../authSlice';
@@ -45,13 +45,17 @@ function Homepage() {
     setSolvedProblems([]); // Clear solved problems on logout
   };
 
-  const filteredProblems = problems.filter(problem => {
-    const difficultyMatch = filters.difficulty === 'all' || problem.difficulty === filters.difficulty;
-    const tagMatch = filters.tag === 'all' || problem.tags === filters.tag;
-    const statusMatch = filters.status === 'all' || 
-                      solvedProblems.some(sp => sp._id === problem._id);
-    return difficultyMatch && tagMatch && statusMatch;
-  });
+ const filteredProblems = problems.filter(problem => {
+  const difficultyMatch = filters.difficulty === 'all' || problem.difficulty === filters.difficulty;
+  const tagMatch = filters.tag === 'all' || problem.tags === filters.tag;
+
+  let statusMatch = true;
+  if (filters.status === 'solved') {
+    statusMatch = solvedProblems.some(sp => sp._id === problem._id);
+  }
+
+  return difficultyMatch && tagMatch && statusMatch;
+});
 
   return (
     <div className="min-h-screen bg-base-200">
@@ -67,6 +71,7 @@ function Homepage() {
             </div>
             <ul className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
               <li><button onClick={handleLogout}>Logout</button></li>
+              {user.role=='admin'&&<li><NavLink to="/admin">Admin</NavLink></li>}
             </ul>
           </div>
         </div>

@@ -179,6 +179,28 @@ const solvedAllProblemByUser=async(req,res)=>{
     }
     catch(err){
       res.status(500).send("Server Error");
+
+
+
+//  try {
+//     const userId = req.result._id;
+
+//     // Find distinct problemIds where user has "accepted" submissions
+//     const solvedProblemIds = await Submission.distinct("problemId", {
+//       userId,
+//       status: "accepted",
+//     });
+
+//     // Fetch the actual problems
+//     const problems = await Problem.find(
+//       { _id: { $in: solvedProblemIds } },
+//       "_id title difficulty tags"
+//     );
+
+//     res.status(200).json(problems);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).send("Server Error");
     }
 }
 
