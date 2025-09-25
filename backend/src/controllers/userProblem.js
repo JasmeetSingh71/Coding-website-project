@@ -1,5 +1,8 @@
 const {getLanguageById,submitBatch,submitToken}=require('../utils/problemUtility')
 const Problem=require('../models/problem')
+const User = require("../models/user");
+const Submission = require("../models/submission");
+const SolutionVideo = require("../models/solutionVideo")
 
 
 
@@ -135,9 +138,25 @@ const getProblemById = async(req,res)=>{
 
     const getProblem = await Problem.findById(id).select('_id title description difficulty tags visibleTestCases startCode');
 
+
+
    if(!getProblem)
     return res.status(404).send("Problem is Missing");
+    const videos = await SolutionVideo.findOne({problemId:id});
 
+   if(videos){   
+    
+   const responseData = {
+    ...getProblem.toObject(),
+    secureUrl:videos.secureUrl,
+    thumbnailUrl : videos.thumbnailUrl,
+    duration : videos.duration,
+   } 
+  
+   return res.status(200).send(responseData);
+   }
+
+   
 
    res.status(200).send(getProblem);
   }
