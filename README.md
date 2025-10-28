@@ -56,7 +56,9 @@ dotenv, bcrypt, Postman for configuration and testing
 Google Gemini API – provides smart, coding-related assistance for users.
 (Restricted to solve programming queries only, ensuring productivity and relevance.)
 
+
 📂 Project Structure
+```bash
 CodeMentor-AI/
 │
 ├── frontend/
@@ -106,6 +108,8 @@ CodeMentor-AI/
 │   └── package.json
 │
 └── README.md
+```
+
 
 
 ⚡ Setup Instructions
